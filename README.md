@@ -1,4 +1,4 @@
-[![Latest Stable Version](https://poser.pugx.org/blazite/flarum-turnstile/v)](https://packagist.org/packages/blazite/flarum-turnstile) [![Total Downloads](https://poser.pugx.org/blazite/flarum-turnstile/downloads)](https://packagist.org/packages/blazite/flarum-turnstile)  [![License](https://poser.pugx.org/blazite/flarum-turnstile/license)](https://packagist.org/packages/blazite/flarum-turnstile)
+[![Latest Stable Version](https://poser.pugx.org/flectar/flarum-turnstile/v)](https://packagist.org/packages/flectar/flarum-turnstile) [![Total Downloads](https://poser.pugx.org/flectar/flarum-turnstile/downloads)](https://packagist.org/packages/flectar/flarum-turnstile)  [![License](https://poser.pugx.org/flectar/flarum-turnstile/license)](https://packagist.org/packages/flectar/flarum-turnstile)
 
 ---
 
@@ -27,7 +27,7 @@ This extension integrates [Cloudflare Turnstile](https://www.cloudflare.com/prod
 Run the following command in your Flarum root directory:
 
 ```bash
-composer require blazite/flarum-turnstile:"*"
+composer require flectar/flarum-turnstile:"*"
 ```
 
 Then enable the extension in the Admin Dashboard and configure your Turnstile site and secret keys.
@@ -41,7 +41,7 @@ You can get your keys from the [Cloudflare Turnstile Dashboard](https://dash.clo
 To update the extension, simply run:
 
 ```bash
-composer update blazite/flarum-turnstile:"*"
+composer update flectar/flarum-turnstile:"*"
 php flarum migrate
 php flarum cache:clear
 ```
@@ -50,17 +50,18 @@ php flarum cache:clear
 
 ### 📄 License
 
-- Open-sourced under the [MIT License](https://github.com/blazite/flarum-ext-turnstile/blob/main/LICENSE).
+- Open-sourced under the [MIT License](https://github.com/flectar/flarum-ext-turnstile/blob/main/LICENSE).
 
 ---
 
 ### 🔗 Useful Links
 
 - [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/)
-- [Flarum](https://flarum.org/)
-- [Packagist - blazite/flarum-turnstile](https://packagist.org/packages/blazite/flarum-turnstile)
-- [GitHub Repo](https://github.com/blazite/flarum-ext-turnstile)
+- [Flectar](https://flectar.com/)
+- [Packagist - flectar/flarum-turnstile](https://packagist.org/packages/flectar/flarum-turnstile)
+- [GitHub Repo](https://github.com/flectar/flarum-ext-turnstile)
 - [Composer](https://getcomposer.org/)
+- [Flarum](https://flarum.org/)
 - [Flarum Discuss Community](https://discuss.flarum.org/)
 
 ---
