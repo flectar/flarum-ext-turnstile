@@ -1,4 +1,4 @@
-blazite-turnstile:
+flectar-turnstile:
   admin:
     settings:
       help_text: Generate Turnstile keys on your Cloudflare account <a>here</a>.

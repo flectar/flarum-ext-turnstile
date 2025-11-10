@@ -1,19 +1,19 @@
 <?php
 
 /*
- * This file is part of blazite/flarum-turnstile.
+ * This file is part of flectar/flarum-turnstile.
  *
- * Copyright (c) 2025 Blazite.
+ * Copyright (c) 2025 Flectar.
  * Copyright (c) 2022 Blomstra Ltd.
  *
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.
  */
 
-namespace Blazite\Turnstile;
+namespace Flectar\Turnstile;
 
-use Blazite\Turnstile\Listeners\AddValidatorRule;
-use Blazite\Turnstile\Validator\TurnstileValidator;
+use Flectar\Turnstile\Listeners\AddValidatorRule;
+use Flectar\Turnstile\Validator\TurnstileValidator;
 use Flarum\Api\ForgotPasswordValidator;
 use Flarum\Extend;
 use Flarum\Forum\LogInValidator;
@@ -35,16 +35,16 @@ return [
     new Extend\Locales(__DIR__.'/locale'),
 
     (new Extend\Settings())
-        ->default('blazite-turnstile.secret_key', null)
-        ->default('blazite-turnstile.site_key', null)
-        ->default('blazite-turnstile.signup', true)
-        ->default('blazite-turnstile.signin', false)
-        ->default('blazite-turnstile.forgot', true)
-        ->serializeToForum('blazite-turnstile.site_key', 'blazite-turnstile.site_key')
+        ->default('flectar-turnstile.secret_key', null)
+        ->default('flectar-turnstile.site_key', null)
+        ->default('flectar-turnstile.signup', true)
+        ->default('flectar-turnstile.signin', false)
+        ->default('flectar-turnstile.forgot', true)
+        ->serializeToForum('flectar-turnstile.site_key', 'flectar-turnstile.site_key')
         ->serializeToForum('turnstile_dark_mode', 'theme_dark_mode', 'boolVal')
-        ->serializeToForum('blazite-turnstile.signup', 'blazite-turnstile.signup', 'boolVal')
-        ->serializeToForum('blazite-turnstile.signin', 'blazite-turnstile.signin', 'boolVal')
-        ->serializeToForum('blazite-turnstile.forgot', 'blazite-turnstile.forgot', 'boolVal'),
+        ->serializeToForum('flectar-turnstile.signup', 'flectar-turnstile.signup', 'boolVal')
+        ->serializeToForum('flectar-turnstile.signin', 'flectar-turnstile.signin', 'boolVal')
+        ->serializeToForum('flectar-turnstile.forgot', 'flectar-turnstile.forgot', 'boolVal'),
 
     (new Extend\Validator(TurnstileValidator::class))
         ->configure(AddValidatorRule::class),

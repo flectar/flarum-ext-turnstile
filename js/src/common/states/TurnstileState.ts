@@ -15,7 +15,7 @@ export default class TurnstileState {
     if (!window.turnstile) return;
 
     this.widgetId = window.turnstile.render(element, {
-      sitekey: app.forum.attribute('blazite-turnstile.site_key'),
+      sitekey: app.forum.attribute('flectar-turnstile.site_key'),
       theme,
       size: 'normal',
       callback: (token) => {
@@ -29,7 +29,7 @@ export default class TurnstileState {
         this.token = null;
         this.errorCallback({
           type: 'error',
-          content: app.translator.trans('blazite-turnstile.forum.error'),
+          content: app.translator.trans('flectar-turnstile.forum.error'),
         });
       },
     });

@@ -16,7 +16,7 @@ const addTurnstileToAuthModal = <T extends typeof ForgotPasswordModal | typeof L
   type: 'forgot' | 'signin' | 'signup';
   dataMethod: 'requestParams' | 'loginParams' | 'submitData';
 }) => {
-  const isEnabled = () => !!app.forum.attribute(`blazite-turnstile.${type}`);
+  const isEnabled = () => !!app.forum.attribute(`flectar-turnstile.${type}`);
 
   extend(modal.prototype, 'oninit', function () {
     if (!isEnabled()) return;
@@ -46,7 +46,7 @@ const addTurnstileToAuthModal = <T extends typeof ForgotPasswordModal | typeof L
     this.turnstile.reset();
 
     if (error.alert && (!error.alert.content || !error.alert.content.length)) {
-      error.alert.content = app.translator.trans('blazite-turnstile.forum.validation_error');
+      error.alert.content = app.translator.trans('flectar-turnstile.forum.validation_error');
     }
 
     this.alertAttrs = error.alert;

@@ -1,5 +1,5 @@
 {
-    "name": "blazite/flarum-turnstile",
+    "name": "flectar/flarum-turnstile",
     "description": "Adds Cloudflare Turnstile CAPTCHA protection to your Flarum forum.",
     "keywords": [
         "flarum",
@@ -10,25 +10,25 @@
     "type": "flarum-extension",
     "license": "MIT",
     "support": {
-        "issues": "https://github.com/blazite/flarum-ext-turnstile/issues",
-        "source": "https://github.com/blazite/flarum-ext-turnstile",
+        "issues": "https://github.com/flectar/flarum-ext-turnstile/issues/",
+        "source": "https://github.com/flectar/flarum-ext-turnstile/",
         "forum": "https://discuss.flarum.org/"
     },
-    "homepage": "https://blazite.com",
+    "homepage": "https://flectar.com/",
     "require": {
         "flarum/core": "^1.8.0",
         "guzzlehttp/guzzle": "^7.0"
     },
     "authors": [
         {
-            "name": "Blazite",
-            "email": "tomas@blazite.com",
+            "name": "Flectar",
+            "email": "tomas@flectar.com",
             "role": "Developer"
         }
     ],
     "autoload": {
         "psr-4": {
-            "Blazite\\Turnstile\\": "src/"
+            "Flectar\\Turnstile\\": "src/"
         }
     },
     "extra": {

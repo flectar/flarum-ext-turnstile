@@ -1,16 +1,16 @@
 <?php
 
 /*
- * This file is part of blazite/turnstile.
+ * This file is part of flectar/turnstile.
  *
- * Copyright (c) 2025 Blazite.
+ * Copyright (c) 2025 Flectar.
  * Copyright (c) 2022 Blomstra Ltd.
  *
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.
  */
 
-namespace Blazite\Turnstile\Validator;
+namespace Flectar\Turnstile\Validator;
 
 use Flarum\Foundation\AbstractValidator;
 

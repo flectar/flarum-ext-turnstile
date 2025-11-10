@@ -1,18 +1,18 @@
 <?php
 
 /*
- * This file is part of blazite/turnstile.
+ * This file is part of flectar/turnstile.
  *
- * Copyright (c) 2025 Blazite.
+ * Copyright (c) 2025 Flectar.
  * Copyright (c) 2022 Blomstra Ltd.
  *
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.
  */
 
-namespace Blazite\Turnstile\Listeners;
+namespace Flectar\Turnstile\Listeners;
 
-use Blazite\Turnstile\Turnstile\Turnstile;
+use Flectar\Turnstile\Turnstile\Turnstile;
 use Flarum\Api\ForgotPasswordValidator;
 use Flarum\Forum\LogInValidator;
 use Flarum\Foundation\AbstractValidator;
@@ -36,7 +36,7 @@ class AddValidatorRule
 
     public function __invoke(AbstractValidator $flarumValidator, Validator $validator)
     {
-        $secret = $this->settings->get('blazite-turnstile.secret_key');
+        $secret = $this->settings->get('flectar-turnstile.secret_key');
 
         $validator->addExtension(
             'turnstile',
@@ -49,13 +49,13 @@ class AddValidatorRule
             }
         );
 
-        if ($flarumValidator instanceof LogInValidator && $this->settings->get('blazite-turnstile.signin')) {
+        if ($flarumValidator instanceof LogInValidator && $this->settings->get('flectar-turnstile.signin')) {
             $validator->addRules([
                 'turnstileToken' => ['required', 'turnstile'],
             ]);
         }
 
-        if ($flarumValidator instanceof ForgotPasswordValidator && $this->settings->get('blazite-turnstile.forgot')) {
+        if ($flarumValidator instanceof ForgotPasswordValidator && $this->settings->get('flectar-turnstile.forgot')) {
             $validator->addRules([
                 'turnstileToken' => ['required', 'turnstile'],
             ]);
