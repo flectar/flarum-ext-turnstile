@@ -1,67 +1,67 @@
 {
-    "name": "flectar/flarum-turnstile",
-    "description": "Adds Cloudflare Turnstile CAPTCHA protection to your Flarum forum.",
-    "keywords": [
-        "flarum",
-        "captcha",
-        "cloudflare",
-        "turnstile"
-    ],
-    "type": "flarum-extension",
-    "license": "MIT",
-    "support": {
-        "issues": "https://github.com/flectar/flarum-ext-turnstile/issues/",
-        "source": "https://github.com/flectar/flarum-ext-turnstile/",
-        "forum": "https://discuss.flarum.org/"
+  "name": "flectar/flarum-turnstile",
+  "description": "Adds Cloudflare Turnstile CAPTCHA protection to your Flarum forum.",
+  "keywords": [
+    "flarum",
+    "captcha",
+    "cloudflare",
+    "turnstile"
+  ],
+  "type": "flarum-extension",
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/flectar/flarum-ext-turnstile/issues/",
+    "source": "https://github.com/flectar/flarum-ext-turnstile/",
+    "forum": "https://discuss.flarum.org/"
+  },
+  "homepage": "https://flectar.com/",
+  "require": {
+    "flarum/core": "^2.0.0@beta",
+    "guzzlehttp/guzzle": "^7.0"
+  },
+  "authors": [
+    {
+      "name": "Flectar",
+      "email": "tomas@flectar.com",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Flectar\\Turnstile\\": "src/"
+    }
+  },
+  "extra": {
+    "flarum-extension": {
+      "title": "Cloudflare Turnstile",
+      "category": "feature",
+      "icon": {
+        "image": "resources/assets/Cloudflare_Turnstile_logo.svg",
+        "backgroundColor": "#ffffff",
+        "backgroundSize": "80%",
+        "backgroundRepeat": "no-repeat",
+        "backgroundPosition": "center"
+      }
     },
-    "homepage": "https://flectar.com/",
-    "require": {
-        "flarum/core": "^1.8.0",
-        "guzzlehttp/guzzle": "^7.0"
-    },
-    "authors": [
-        {
-            "name": "Flectar",
-            "email": "tomas@flectar.com",
-            "role": "Developer"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Flectar\\Turnstile\\": "src/"
-        }
-    },
-    "extra": {
-        "flarum-extension": {
-            "title": "Cloudflare Turnstile",
-            "category": "feature",
-            "icon": {
-                "image": "resources/assets/Cloudflare_Turnstile_logo.svg",
-                "backgroundColor": "#ffffff",
-                "backgroundSize": "80%",
-                "backgroundRepeat": "no-repeat",
-                "backgroundPosition": "center"
-            }
-        },
-        "flarum-cli": {
-            "modules": {
-                "admin": true,
-                "forum": true,
-                "js": true,
-                "jsCommon": true,
-                "css": true,
-                "locale": true,
-                "gitConf": true,
-                "githubActions": true,
-                "prettier": true,
-                "typescript": false,
-                "bundlewatch": false,
-                "backendTesting": false,
-                "editorConfig": true,
-                "styleci": true
-            }
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "flarum-cli": {
+      "modules": {
+        "admin": true,
+        "forum": true,
+        "js": true,
+        "jsCommon": true,
+        "css": true,
+        "locale": true,
+        "gitConf": true,
+        "githubActions": true,
+        "prettier": true,
+        "typescript": false,
+        "bundlewatch": false,
+        "backendTesting": false,
+        "editorConfig": true,
+        "styleci": true
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
