@@ -11,6 +11,7 @@ flectar-turnstile:
   forum:
     not_loaded_error: Failed to load Cloudflare Turnstile. Please refresh the page, and check your adblocker.
     validation_error: Please complete the Turnstile challenge.
+    error: An error occurred while verifying you are human. Please try again.
 
 validation:
   turnstile: We couldn't verify if you're a robot or not. Please refresh the page and try again.
