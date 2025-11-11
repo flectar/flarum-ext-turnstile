@@ -3,18 +3,19 @@ import { extend, override } from 'flarum/common/extend';
 import ForgotPasswordModal from 'flarum/forum/components/ForgotPasswordModal';
 import LogInModal from 'flarum/forum/components/LogInModal';
 import SignUpModal from 'flarum/forum/components/SignUpModal';
+import ChangePasswordModal from 'flarum/forum/components/ChangePasswordModal';
 
 import TurnstileState from '../common/states/TurnstileState';
 import Turnstile from './components/Turnstile';
 
-const addTurnstileToAuthModal = <T extends typeof ForgotPasswordModal | typeof LogInModal | typeof SignUpModal>({
+const addTurnstileToAuthModal = <T extends typeof ForgotPasswordModal | typeof LogInModal | typeof SignUpModal | typeof ChangePasswordModal>({
   modal,
   type,
   dataMethod,
 }: {
   modal: T;
   type: 'forgot' | 'signin' | 'signup';
-  dataMethod: 'requestParams' | 'loginParams' | 'submitData';
+  dataMethod: 'requestParams' | 'loginParams' | 'submitData' | 'requestBody';
 }) => {
   const isEnabled = () => !!app.forum.attribute(`flectar-turnstile.${type}`);
 
@@ -37,7 +38,7 @@ const addTurnstileToAuthModal = <T extends typeof ForgotPasswordModal | typeof L
 
   extend(modal.prototype, 'fields', function (fields) {
     if (!isEnabled()) return;
-    fields.add('turnstile', <Turnstile state={this.turnstile} />, -5);
+    fields.add('turnstile', <Turnstile state={this.turnstile} />, this instanceof ChangePasswordModal ? 10 : -5);
   });
 
   extend(modal.prototype, 'onerror', function (_, error) {
@@ -72,5 +73,11 @@ export default function extendAuthModalsWithTurnstile() {
     modal: SignUpModal,
     type: 'signup',
     dataMethod: 'submitData',
+  });
+
+  addTurnstileToAuthModal({
+    modal: ChangePasswordModal,
+    type: 'forgot',
+    dataMethod: 'requestBody',
   });
 }
