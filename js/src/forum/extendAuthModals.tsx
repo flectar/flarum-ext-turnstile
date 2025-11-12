@@ -11,8 +11,8 @@ const addTurnstileToAuthModal = ({
   type: 'forgot' | 'signin' | 'signup';
   dataMethod: 'requestParams' | 'loginParams' | 'submitData' | 'requestBody';
 }) => {
-  import(modulePath).then((module) => {
-    const modal = module.default;
+  flarum.core.lazyExtend(modulePath, (exports) => {
+    const modal = exports.default;
 
     const isEnabled = () => !!flarum.forum.attribute(`flectar-turnstile.${type}`);
 
@@ -44,6 +44,7 @@ const addTurnstileToAuthModal = ({
       const fields = original();
 
       if (!isEnabled()) return fields;
+
       const priority = modulePath.includes('ChangePasswordModal') ? 10 : -5;
 
       fields.add('turnstile', <Turnstile state={this.turnstile} />, priority);
