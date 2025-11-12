@@ -1,5 +1,3 @@
-import app from 'flarum/forum/app';
-
 export default class TurnstileState {
   token = null;
   widgetId = undefined;
@@ -15,7 +13,7 @@ export default class TurnstileState {
     if (!window.turnstile) return;
 
     this.widgetId = window.turnstile.render(element, {
-      sitekey: app.forum.attribute('flectar-turnstile.site_key'),
+      sitekey: flarum.forum.attribute('flectar-turnstile.site_key'),
       theme,
       size: 'normal',
       callback: (token) => {
@@ -29,7 +27,7 @@ export default class TurnstileState {
         this.token = null;
         this.errorCallback({
           type: 'error',
-          content: app.translator.trans('flectar-turnstile.forum.error'),
+          content: flarum.translator.trans('flectar-turnstile.forum.error'),
         });
       },
     });

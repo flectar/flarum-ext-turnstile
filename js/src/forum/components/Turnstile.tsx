@@ -1,5 +1,4 @@
 import Component from 'flarum/common/Component';
-import app from 'flarum/forum/app';
 
 export default class Turnstile extends Component<{ state: any }> {
   oncreate(vnode) {
@@ -24,7 +23,9 @@ export default class Turnstile extends Component<{ state: any }> {
       return currentTheme === Themes.DARK ? 'dark' : 'light';
     }
 
-    return !!app.forum.attribute('turnstile_dark_mode') ? 'dark' : 'light';
+    const isDark = flarum.forum.attributes.themeDarkMode;
+    
+    return isDark ? 'dark' : 'light';
   }
 
   view() {

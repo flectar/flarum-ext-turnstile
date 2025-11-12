@@ -1,5 +1,4 @@
-import app from 'flarum/forum/app';
-import { extend, override } from 'flarum/common/extend';
+import { override } from 'flarum/common/extend';
 import ForgotPasswordModal from 'flarum/forum/components/ForgotPasswordModal';
 import LogInModal from 'flarum/forum/components/LogInModal';
 import SignUpModal from 'flarum/forum/components/SignUpModal';
@@ -17,9 +16,11 @@ const addTurnstileToAuthModal = <T extends typeof ForgotPasswordModal | typeof L
   type: 'forgot' | 'signin' | 'signup';
   dataMethod: 'requestParams' | 'loginParams' | 'submitData' | 'requestBody';
 }) => {
-  const isEnabled = () => !!app.forum.attribute(`flectar-turnstile.${type}`);
+  const isEnabled = () => !!flarum.forum.attribute(`flectar-turnstile.${type}`);
 
-  extend(modal.prototype, 'oninit', function () {
+  override(modal.prototype, 'oninit', function (original) {
+    original();
+
     if (!isEnabled()) return;
 
     this.turnstile = new TurnstileState(
@@ -31,27 +32,37 @@ const addTurnstileToAuthModal = <T extends typeof ForgotPasswordModal | typeof L
     );
   });
 
-  extend(modal.prototype, dataMethod, function (data) {
-    if (!isEnabled()) return;
+  override(modal.prototype, dataMethod, function (original) {
+    const data = original();
+
+    if (!isEnabled()) return data;
+
     data.turnstileToken = this.turnstile.getResponse();
+
+    return data;
   });
 
-  extend(modal.prototype, 'fields', function (fields) {
-    if (!isEnabled()) return;
+  override(modal.prototype, 'fields', function (original) {
+    const fields = original();
+
+    if (!isEnabled()) return fields;
+
     fields.add('turnstile', <Turnstile state={this.turnstile} />, this instanceof ChangePasswordModal ? 10 : -5);
+
+    return fields;
   });
 
-  extend(modal.prototype, 'onerror', function (_, error) {
+  override(modal.prototype, 'onerror', function (original, error) {
+    original(error);
+
     if (!isEnabled()) return;
 
     this.turnstile.reset();
 
     if (error.alert && (!error.alert.content || !error.alert.content.length)) {
-      error.alert.content = app.translator.trans('flectar-turnstile.forum.validation_error');
+      error.alert.content = flarum.translator.trans('flectar-turnstile.forum.validation_error');
     }
-
     this.alertAttrs = error.alert;
-    m.redraw();
     this.onready?.();
   });
 };
