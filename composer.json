@@ -17,7 +17,8 @@
     "homepage": "https://flectar.com/",
     "require": {
         "flarum/core": "^2.0.0-beta",
-        "guzzlehttp/guzzle": "^7.0"
+        "guzzlehttp/guzzle": "^7.0",
+        "php": "^8.2"
     },
     "authors": [
         {
