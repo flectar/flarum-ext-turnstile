@@ -1,9 +1,10 @@
 import { extend } from 'flarum/common/extend';
+import app from 'flarum/forum/app';
 import TurnstileState from '../common/states/TurnstileState';
 import Turnstile from './components/Turnstile';
 
 export default function extendAuthModalsWithTurnstile() {
-  const isEnabled = (type: 'forgot' | 'signin' | 'signup') => !!flarum.forum.attribute(`flectar-turnstile.${type}`);
+  const isEnabled = (type: 'forgot' | 'signin' | 'signup') => !!app.forum.attribute(`flectar-turnstile.${type}`);
 
   const applyExtenders = (
     modulePath: string,
@@ -40,7 +41,7 @@ export default function extendAuthModalsWithTurnstile() {
 
       this.turnstile.reset();
       if (error.alert && !error.alert.content?.length) {
-        error.alert.content = flarum.translator.trans('flectar-turnstile.forum.validation_error');
+        error.alert.content = app.translator.trans('flectar-turnstile.forum.validation_error');
       }
     });
   };
