@@ -13,6 +13,7 @@
 namespace Flectar\Turnstile\Listeners;
 
 use Flectar\Turnstile\Turnstile\Turnstile;
+use Flectar\Turnstile\Validator\TurnstileValidator;
 use Flarum\Api\ForgotPasswordValidator;
 use Flarum\Forum\LogInValidator;
 use Flarum\Foundation\AbstractValidator;
@@ -21,14 +22,8 @@ use Illuminate\Validation\Validator;
 
 class AddValidatorRule
 {
-    /**
-     * @var SettingsRepositoryInterface
-     */
     protected $settings;
 
-    /**
-     * @param SettingsRepositoryInterface $settings
-     */
     public function __construct(SettingsRepositoryInterface $settings)
     {
         $this->settings = $settings;
@@ -41,13 +36,18 @@ class AddValidatorRule
         $validator->addExtension(
             'turnstile',
             function ($attribute, $value) use ($secret) {
-                if (! is_string($value) || ! is_string($secret)) {
+                if (!is_string($value) || !is_string($secret)) {
                     return false;
                 }
-
-                return ! empty($value) && (new Turnstile($secret))->verify($value)['success'];
+                return !empty($value) && (new Turnstile($secret))->verify($value)['success'];
             }
         );
+
+        if ($flarumValidator instanceof TurnstileValidator && $this->settings->get('flectar-turnstile.signup')) {
+            $validator->addRules([
+                'turnstileToken' => ['required', 'turnstile'],
+            ]);
+        }
 
         if ($flarumValidator instanceof LogInValidator && $this->settings->get('flectar-turnstile.signin')) {
             $validator->addRules([

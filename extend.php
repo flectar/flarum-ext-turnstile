@@ -41,10 +41,9 @@ return [
         ->default('flectar-turnstile.signin', false)
         ->default('flectar-turnstile.forgot', true)
         ->serializeToForum('flectar-turnstile.site_key', 'flectar-turnstile.site_key')
-        ->serializeToForum('turnstile_dark_mode', 'theme_dark_mode', 'boolVal')
-        ->serializeToForum('flectar-turnstile.signup', 'flectar-turnstile.signup', 'boolVal')
-        ->serializeToForum('flectar-turnstile.signin', 'flectar-turnstile.signin', 'boolVal')
-        ->serializeToForum('flectar-turnstile.forgot', 'flectar-turnstile.forgot', 'boolVal'),
+        ->serializeToForum('flectar-turnstile.signup', 'flectar-turnstile.signup', 'boolval')
+        ->serializeToForum('flectar-turnstile.signin', 'flectar-turnstile.signin', 'boolval')
+        ->serializeToForum('flectar-turnstile.forgot', 'flectar-turnstile.forgot', 'boolval'),
 
     (new Extend\Validator(TurnstileValidator::class))
         ->configure(AddValidatorRule::class),

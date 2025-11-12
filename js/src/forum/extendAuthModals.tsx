@@ -1,83 +1,53 @@
+import { extend } from 'flarum/common/extend';
 import app from 'flarum/forum/app';
-import { extend, override } from 'flarum/common/extend';
-import ForgotPasswordModal from 'flarum/forum/components/ForgotPasswordModal';
-import LogInModal from 'flarum/forum/components/LogInModal';
-import SignUpModal from 'flarum/forum/components/SignUpModal';
-import ChangePasswordModal from 'flarum/forum/components/ChangePasswordModal';
-
 import TurnstileState from '../common/states/TurnstileState';
 import Turnstile from './components/Turnstile';
 
-const addTurnstileToAuthModal = <T extends typeof ForgotPasswordModal | typeof LogInModal | typeof SignUpModal | typeof ChangePasswordModal>({
-  modal,
-  type,
-  dataMethod,
-}: {
-  modal: T;
-  type: 'forgot' | 'signin' | 'signup';
-  dataMethod: 'requestParams' | 'loginParams' | 'submitData' | 'requestBody';
-}) => {
-  const isEnabled = () => !!app.forum.attribute(`flectar-turnstile.${type}`);
-
-  extend(modal.prototype, 'oninit', function () {
-    if (!isEnabled()) return;
-
-    this.turnstile = new TurnstileState(
-      () => {},
-      (alertAttrs) => {
-        this.loaded?.();
-        this.alertAttrs = alertAttrs;
-      }
-    );
-  });
-
-  extend(modal.prototype, dataMethod, function (data) {
-    if (!isEnabled()) return;
-    data.turnstileToken = this.turnstile.getResponse();
-  });
-
-  extend(modal.prototype, 'fields', function (fields) {
-    if (!isEnabled()) return;
-    fields.add('turnstile', <Turnstile state={this.turnstile} />, this instanceof ChangePasswordModal ? 10 : -5);
-  });
-
-  extend(modal.prototype, 'onerror', function (_, error) {
-    if (!isEnabled()) return;
-
-    this.turnstile.reset();
-
-    if (error.alert && (!error.alert.content || !error.alert.content.length)) {
-      error.alert.content = app.translator.trans('flectar-turnstile.forum.validation_error');
-    }
-
-    this.alertAttrs = error.alert;
-    m.redraw();
-    this.onready?.();
-  });
-};
-
 export default function extendAuthModalsWithTurnstile() {
-  addTurnstileToAuthModal({
-    modal: ForgotPasswordModal,
-    type: 'forgot',
-    dataMethod: 'requestParams',
-  });
+  const isEnabled = (type: 'forgot' | 'signin' | 'signup') => !!app.forum.attribute(`flectar-turnstile.${type}`);
 
-  addTurnstileToAuthModal({
-    modal: LogInModal,
-    type: 'signin',
-    dataMethod: 'loginParams',
-  });
+  const applyExtenders = (
+    modulePath: string,
+    type: 'forgot' | 'signin' | 'signup',
+    dataMethod: 'requestParams' | 'loginParams' | 'submitData' | 'requestBody'
+  ) => {
+    extend(modulePath, 'oninit', function () {
+      if (!isEnabled(type)) return;
 
-  addTurnstileToAuthModal({
-    modal: SignUpModal,
-    type: 'signup',
-    dataMethod: 'submitData',
-  });
+      this.turnstile = new TurnstileState(
+        () => {},
+        (alertAttrs) => {
+          this.loaded?.();
+          this.alertAttrs = alertAttrs;
+        }
+      );
+    });
 
-  addTurnstileToAuthModal({
-    modal: ChangePasswordModal,
-    type: 'forgot',
-    dataMethod: 'requestBody',
-  });
+    extend(modulePath, dataMethod, function (data) {
+      if (!isEnabled(type)) return;
+
+      data.turnstileToken = this.turnstile.getResponse();
+    });
+
+    extend(modulePath, 'fields', function (items) {
+      if (!isEnabled(type)) return;
+
+      const priority = modulePath.includes('ChangePasswordModal') ? 10 : -5;
+      items.add('turnstile', <Turnstile state={this.turnstile} />, priority);
+    });
+
+    extend(modulePath, 'onerror', function (_, error) {
+      if (!isEnabled(type)) return;
+
+      this.turnstile.reset();
+      if (error.alert && !error.alert.content?.length) {
+        error.alert.content = app.translator.trans('flectar-turnstile.forum.validation_error');
+      }
+    });
+  };
+
+  applyExtenders('flarum/forum/components/ForgotPasswordModal', 'forgot', 'requestParams');
+  applyExtenders('flarum/forum/components/LogInModal', 'signin', 'loginParams');
+  applyExtenders('flarum/forum/components/SignUpModal', 'signup', 'submitData');
+  applyExtenders('flarum/forum/components/ChangePasswordModal', 'forgot', 'requestBody');
 }
