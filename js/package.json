@@ -1,5 +1,5 @@
 {
-    "name": "flectar-flarum-turnstile",
+    "name": "@flectar/flarum-turnstile",
     "private": true,
     "version": "0.0.0",
     "devDependencies": {
