@@ -1,17 +1,16 @@
-import { override } from 'flarum/common/extend';
+import { extend } from 'flarum/common/extend';
 import TurnstileState from '../common/states/TurnstileState';
 import Turnstile from './components/Turnstile';
 
 export default function extendAuthModalsWithTurnstile() {
   const isEnabled = (type: 'forgot' | 'signin' | 'signup') => !!flarum.forum.attribute(`flectar-turnstile.${type}`);
 
-  const applyOverrides = (
+  const applyExtenders = (
     modulePath: string,
     type: 'forgot' | 'signin' | 'signup',
     dataMethod: 'requestParams' | 'loginParams' | 'submitData' | 'requestBody'
   ) => {
-    override(modulePath, 'oninit', function (original) {
-      original();
+    extend(modulePath, 'oninit', function () {
       if (!isEnabled(type)) return;
 
       this.turnstile = new TurnstileState(
@@ -23,39 +22,31 @@ export default function extendAuthModalsWithTurnstile() {
       );
     });
 
-    override(modulePath, dataMethod, function (original) {
-      const data = original();
-      if (!isEnabled(type)) return data;
+    extend(modulePath, dataMethod, function (data) {
+      if (!isEnabled(type)) return;
 
       data.turnstileToken = this.turnstile.getResponse();
-      return data;
     });
 
-    override(modulePath, 'fields', function (original) {
-      const fields = original();
-      if (!isEnabled(type)) return fields;
+    extend(modulePath, 'fields', function (items) {
+      if (!isEnabled(type)) return;
 
       const priority = modulePath.includes('ChangePasswordModal') ? 10 : -5;
-      fields.add('turnstile', <Turnstile state={this.turnstile} />, priority);
-
-      return fields;
+      items.add('turnstile', <Turnstile state={this.turnstile} />, priority);
     });
 
-    override(modulePath, 'onerror', function (original, error) {
-      original(error);
+    extend(modulePath, 'onerror', function (error) {
       if (!isEnabled(type)) return;
 
       this.turnstile.reset();
       if (error.alert && !error.alert.content?.length) {
         error.alert.content = flarum.translator.trans('flectar-turnstile.forum.validation_error');
       }
-      this.alertAttrs = error.alert;
-      this.onready?.();
     });
   };
 
-  applyOverrides('flarum/forum/components/ForgotPasswordModal', 'forgot', 'requestParams');
-  applyOverrides('flarum/forum/components/LogInModal', 'signin', 'loginParams');
-  applyOverrides('flarum/forum/components/SignUpModal', 'signup', 'submitData');
-  applyOverrides('flarum/forum/components/ChangePasswordModal', 'forgot', 'requestBody');
+  applyExtenders('flarum/forum/components/ForgotPasswordModal', 'forgot', 'requestParams');
+  applyExtenders('flarum/forum/components/LogInModal', 'signin', 'loginParams');
+  applyExtenders('flarum/forum/components/SignUpModal', 'signup', 'submitData');
+  applyExtenders('flarum/forum/components/ChangePasswordModal', 'forgot', 'requestBody');
 }
