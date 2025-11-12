@@ -36,7 +36,7 @@ export default function extendAuthModalsWithTurnstile() {
       items.add('turnstile', <Turnstile state={this.turnstile} />, priority);
     });
 
-    extend(modulePath, 'onerror', function (error) {
+    extend(modulePath, 'onerror', function (_, error) {
       if (!isEnabled(type)) return;
 
       this.turnstile.reset();
