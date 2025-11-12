@@ -10,22 +10,9 @@ export default class Turnstile extends Component<{ state: any }> {
   }
 
   detectTheme(): 'light' | 'dark' {
-    const getTheme = flarum.extensions['fof-nightmode']?.getTheme;
-    const Themes = flarum.extensions['fof-nightmode']?.Themes;
+    const currentTheme = document.documentElement.dataset.theme || 'light';
 
-    if (getTheme && Themes) {
-      let currentTheme = getTheme();
-
-      if (currentTheme === Themes.AUTO) {
-        currentTheme = window.matchMedia('(prefers-color-scheme:dark)').matches ? Themes.DARK : Themes.LIGHT;
-      }
-
-      return currentTheme === Themes.DARK ? 'dark' : 'light';
-    }
-
-    const isDark = flarum.forum.attributes.themeDarkMode;
-    
-    return isDark ? 'dark' : 'light';
+    return currentTheme.startsWith('dark') ? 'dark' : 'light';
   }
 
   view() {
