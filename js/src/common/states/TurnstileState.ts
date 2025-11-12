@@ -17,7 +17,7 @@ export default class TurnstileState {
     this.widgetId = window.turnstile.render(element, {
       sitekey: app.forum.attribute('flectar-turnstile.site_key'),
       theme,
-      size: 'normal',
+      size: 'flexible',
       callback: (token) => {
         this.token = token;
         this.callback(token);
