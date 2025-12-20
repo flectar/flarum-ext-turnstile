@@ -53,7 +53,6 @@ return [
     (new Extend\Validator(ForgotPasswordValidator::class))
         ->configure(AddValidatorRule::class),
 
-    // This registers our new Middleware for the fix
     (new Extend\ServiceProvider())
         ->register(TurnstileServiceProvider::class),
 ];
