@@ -18,7 +18,6 @@ use Flarum\Api\ForgotPasswordValidator;
 use Flarum\Extend;
 use Flarum\Forum\LogInValidator;
 use Flarum\Frontend\Document;
-use Flarum\User\Event\Saving as UserSaving;
 
 return [
     (new Extend\Frontend('forum'))
@@ -54,6 +53,7 @@ return [
     (new Extend\Validator(ForgotPasswordValidator::class))
         ->configure(AddValidatorRule::class),
 
-    (new Extend\Event())
-        ->listen(UserSaving::class, Listeners\RegisterValidate::class),
+    // This registers our new Middleware for the fix
+    (new Extend\ServiceProvider())
+        ->register(TurnstileServiceProvider::class),
 ];
