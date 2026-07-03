@@ -25,7 +25,7 @@ return [
         ->js(__DIR__.'/js/dist/forum.js')
         ->css(__DIR__.'/less/forum.less')
         ->content(function (Document $document) {
-            $document->head[] = '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>';
+            $document->head[] = '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>';
         }),
 
     (new Extend\Frontend('admin'))
