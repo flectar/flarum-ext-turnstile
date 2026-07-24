@@ -3,7 +3,7 @@
 /*
  * This file is part of flectar/flarum-turnstile.
  *
- * Copyright (c) 2025 Flectar.
+ * Copyright (c) 2026 Flectar.
  *
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.

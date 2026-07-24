@@ -3,7 +3,7 @@
 /*
  * This file is part of flectar/turnstile.
  *
- * Copyright (c) 2025 Flectar.
+ * Copyright (c) 2026 Flectar.
  * Copyright (c) 2022 Blomstra Ltd.
  *
  * For the full copyright and license information, please view the LICENSE.md
