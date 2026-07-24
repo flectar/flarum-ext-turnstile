@@ -18,7 +18,8 @@ This extension integrates [Cloudflare Turnstile](https://www.cloudflare.com/prod
 
 ### ⚠ Minimum Requirements
 
-- Flarum v1.8.0 or higher
+- Flarum v2.0.0-rc.4 or higher
+- PHP 8.3 or higher
 
 ---
 
