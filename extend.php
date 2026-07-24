@@ -13,20 +13,19 @@
 namespace Flectar\Turnstile;
 
 use Flectar\Turnstile\Listeners\AddValidatorRule;
+use Flectar\Turnstile\Middleware\ValidateApiToken;
 use Flectar\Turnstile\Validator\TurnstileValidator;
 use Flarum\Api\ForgotPasswordValidator;
+use Flarum\Api\Resource\UserResource;
+use Flarum\Api\Schema;
 use Flarum\Extend;
 use Flarum\Forum\LogInValidator;
-use Flarum\Frontend\Document;
 use Flarum\User\Event\Saving as UserSaving;
 
 return [
     (new Extend\Frontend('forum'))
         ->js(__DIR__.'/js/dist/forum.js')
-        ->css(__DIR__.'/less/forum.less')
-        ->content(function (Document $document) {
-            $document->head[] = '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>';
-        }),
+        ->css(__DIR__.'/less/forum.less'),
 
     (new Extend\Frontend('admin'))
         ->js(__DIR__.'/js/dist/admin.js')
@@ -53,6 +52,19 @@ return [
 
     (new Extend\Validator(ForgotPasswordValidator::class))
         ->configure(AddValidatorRule::class),
+
+    (new Extend\ApiResource(UserResource::class))
+        ->fields(fn () => [
+            Schema\Str::make('turnstileToken')
+                ->maxLength(2048)
+                ->visible(false)
+                ->writableOnCreate()
+                ->set(fn () => null)
+                ->save(fn () => null),
+        ]),
+
+    (new Extend\Middleware('api'))
+        ->add(ValidateApiToken::class),
 
     (new Extend\Event())
         ->listen(UserSaving::class, Listeners\RegisterValidate::class),

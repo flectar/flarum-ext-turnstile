@@ -35,12 +35,12 @@ class RegisterValidate
         $this->settings = $settings;
     }
 
-    public function handle(Saving $event)
+    public function handle(Saving $event): void
     {
         // We also check for the actor's admin status, so that we can allow admins to create users from the admin panel without a Turnstile token.
         if (! $event->user->exists && $this->settings->get('flectar-turnstile.signup') && ! $event->actor->isAdmin()) {
             $this->validator->assertValid([
-                'turnstile' => Arr::get($event->data, 'attributes.turnstileToken'),
+                'turnstileToken' => Arr::get($event->data, 'attributes.turnstileToken'),
             ]);
         }
     }

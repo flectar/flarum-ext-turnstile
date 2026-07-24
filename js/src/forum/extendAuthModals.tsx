@@ -1,5 +1,6 @@
 import { extend } from 'flarum/common/extend';
 import app from 'flarum/forum/app';
+import type RequestError from 'flarum/common/utils/RequestError';
 import TurnstileState from '../common/states/TurnstileState';
 import Turnstile from './components/Turnstile';
 
@@ -39,9 +40,11 @@ export default function extendAuthModalsWithTurnstile() {
     extend(modulePath, 'onerror', function (_, error) {
       if (!isEnabled(type)) return;
 
+      const requestError = error as RequestError;
+
       this.turnstile.reset();
-      if (error.alert && !error.alert.content?.length) {
-        error.alert.content = app.translator.trans('flectar-turnstile.forum.validation_error');
+      if (requestError.alert && !requestError.alert.content?.length) {
+        requestError.alert.content = app.translator.trans('flectar-turnstile.forum.validation_error');
       }
     });
   };
@@ -50,4 +53,8 @@ export default function extendAuthModalsWithTurnstile() {
   applyExtenders('flarum/forum/components/LogInModal', 'signin', 'loginParams');
   applyExtenders('flarum/forum/components/SignUpModal', 'signup', 'submitData');
   applyExtenders('flarum/forum/components/ChangePasswordModal', 'forgot', 'requestBody');
+
+  extend('flarum/forum/components/ChangePasswordModal', 'loaded', function () {
+    if (isEnabled('forgot')) this.turnstile.reset();
+  });
 }

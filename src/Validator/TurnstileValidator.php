@@ -21,6 +21,8 @@ class TurnstileValidator extends AbstractValidator
      */
     protected function getRules(): array
     {
-        return [];
+        return [
+            'turnstileToken' => ['required', 'turnstile'],
+        ];
     }
 }
