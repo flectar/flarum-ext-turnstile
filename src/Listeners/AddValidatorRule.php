@@ -14,7 +14,6 @@ namespace Flectar\Turnstile\Listeners;
 
 use Flectar\Turnstile\Turnstile\Turnstile;
 use Flarum\Api\ForgotPasswordValidator;
-use Flarum\Forum\LogInValidator;
 use Flarum\Foundation\AbstractValidator;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Validation\Validator;
@@ -33,12 +32,6 @@ class AddValidatorRule
             'turnstile',
             fn ($attribute, $value) => is_string($value) && $this->turnstile->verify($value)
         );
-
-        if ($flarumValidator instanceof LogInValidator && $this->settings->get('flectar-turnstile.signin')) {
-            $validator->addRules([
-                'turnstileToken' => ['required', 'turnstile'],
-            ]);
-        }
 
         if ($flarumValidator instanceof ForgotPasswordValidator && $this->settings->get('flectar-turnstile.forgot')) {
             $validator->addRules([

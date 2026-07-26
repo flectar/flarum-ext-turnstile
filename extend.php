@@ -14,12 +14,12 @@ namespace Flectar\Turnstile;
 
 use Flectar\Turnstile\Listeners\AddValidatorRule;
 use Flectar\Turnstile\Middleware\ValidateApiToken;
+use Flectar\Turnstile\Middleware\ValidateLogin;
 use Flectar\Turnstile\Validator\TurnstileValidator;
 use Flarum\Api\ForgotPasswordValidator;
 use Flarum\Api\Resource\UserResource;
 use Flarum\Api\Schema;
 use Flarum\Extend;
-use Flarum\Forum\LogInValidator;
 use Flarum\User\Event\Saving as UserSaving;
 
 return [
@@ -47,9 +47,6 @@ return [
     (new Extend\Validator(TurnstileValidator::class))
         ->configure(AddValidatorRule::class),
 
-    (new Extend\Validator(LogInValidator::class))
-        ->configure(AddValidatorRule::class),
-
     (new Extend\Validator(ForgotPasswordValidator::class))
         ->configure(AddValidatorRule::class),
 
@@ -62,6 +59,9 @@ return [
                 ->set(fn () => null)
                 ->save(fn () => null),
         ]),
+
+    (new Extend\Middleware('forum'))
+        ->add(ValidateLogin::class),
 
     (new Extend\Middleware('api'))
         ->add(ValidateApiToken::class),
