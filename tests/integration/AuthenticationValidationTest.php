@@ -17,7 +17,11 @@ use Flarum\Foundation\AbstractServiceProvider;
 use Flarum\Testing\integration\RetrievesAuthorizedUsers;
 use Flarum\Testing\integration\TestCase;
 use Flarum\User\User;
+use Laminas\Diactoros\Response\JsonResponse;
 use PHPUnit\Framework\Attributes\Test;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class AuthenticationValidationTest extends TestCase
 {
@@ -69,6 +73,36 @@ class AuthenticationValidationTest extends TestCase
         $response = $this->sendLoginRequest('invalid-turnstile-token');
 
         $this->assertSame(422, $response->getStatusCode(), (string) $response->getBody());
+    }
+
+    #[Test]
+    public function login_is_unchanged_when_signin_protection_is_disabled(): void
+    {
+        $this->setting('flectar-turnstile.signin', false);
+
+        $response = $this->sendLoginRequest();
+
+        $this->assertSame(200, $response->getStatusCode(), (string) $response->getBody());
+    }
+
+    #[Test]
+    public function a_replacement_login_controller_cannot_bypass_a_missing_turnstile_token(): void
+    {
+        $this->replaceLoginController();
+
+        $response = $this->sendLoginRequest();
+
+        $this->assertSame(422, $response->getStatusCode(), (string) $response->getBody());
+    }
+
+    #[Test]
+    public function a_replacement_login_controller_accepts_a_valid_turnstile_token(): void
+    {
+        $this->replaceLoginController();
+
+        $response = $this->sendLoginRequest('valid-turnstile-token');
+
+        $this->assertSame(200, $response->getStatusCode(), (string) $response->getBody());
     }
 
     #[Test]
@@ -211,6 +245,7 @@ class AuthenticationValidationTest extends TestCase
                     'password' => 'too-obscure',
                     'remember' => false,
                     'turnstileToken' => $turnstileToken,
+                    'twoFactorToken' => '',
                 ], fn ($value) => $value !== null),
             ])
         );
@@ -260,6 +295,15 @@ class AuthenticationValidationTest extends TestCase
             $this->request('POST', '/api/forgot', $options)
         );
     }
+
+    private function replaceLoginController(): void
+    {
+        $this->extend(
+            (new Extend\Routes('forum'))
+                ->remove('login')
+                ->post('/login', 'login', ReplacementLogInController::class)
+        );
+    }
 }
 
 class FakeTurnstileServiceProvider extends AbstractServiceProvider
@@ -272,12 +316,28 @@ class FakeTurnstileServiceProvider extends AbstractServiceProvider
 
 class FakeTurnstile extends Turnstile
 {
+    private array $verifiedTokens = [];
+
     public function __construct()
     {
     }
 
     public function verify(string $response): bool
     {
-        return $response === 'valid-turnstile-token';
+        if ($response !== 'valid-turnstile-token' || isset($this->verifiedTokens[$response])) {
+            return false;
+        }
+
+        $this->verifiedTokens[$response] = true;
+
+        return true;
+    }
+}
+
+class ReplacementLogInController implements RequestHandlerInterface
+{
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        return new JsonResponse(['authenticated' => true]);
     }
 }
