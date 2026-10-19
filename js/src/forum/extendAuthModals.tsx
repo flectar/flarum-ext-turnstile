@@ -15,11 +15,20 @@ export default function extendAuthModalsWithTurnstile() {
     extend(modulePath, 'oninit', function () {
       if (!isEnabled(type)) return;
 
+      let turnstileAlert: { type: 'error'; content: unknown } | null = null;
+
       this.turnstile = new TurnstileState(
-        () => {},
+        () => {
+          if (turnstileAlert && this.alertAttrs === turnstileAlert) {
+            this.alertAttrs = null;
+            m.redraw();
+          }
+          turnstileAlert = null;
+        },
         (alertAttrs) => {
-          this.loaded?.();
-          this.alertAttrs = alertAttrs;
+          // Widget failures must not finish pending requests or reset the challenge.
+          this.alertAttrs = turnstileAlert = alertAttrs;
+          m.redraw();
         }
       );
     });
