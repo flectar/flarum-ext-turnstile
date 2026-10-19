@@ -7,5 +7,7 @@ jobs:
     uses: flarum/framework/.github/workflows/REUSABLE_backend.yml@2.x
     with:
       enable_backend_testing: true
+      enable_phpstan: true
+      php_extensions: curl, dom, gd, json, mbstring, openssl, pdo_mysql, pdo_pgsql, pdo_sqlite, sqlite3, tokenizer, zip
 
       backend_directory: .

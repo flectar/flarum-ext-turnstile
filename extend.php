@@ -33,6 +33,9 @@ return [
 
     new Extend\Locales(__DIR__.'/locale'),
 
+    (new Extend\View())
+        ->extendNamespace('flarum.forum', __DIR__.'/views'),
+
     (new Extend\Settings())
         ->default('flectar-turnstile.secret_key', null)
         ->default('flectar-turnstile.site_key', null)

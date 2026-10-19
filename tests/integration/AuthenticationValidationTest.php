@@ -221,6 +221,128 @@ class AuthenticationValidationTest extends TestCase
     }
 
     #[Test]
+    public function forgot_password_rejects_an_invalid_turnstile_token(): void
+    {
+        $response = $this->sendForgotPasswordRequest('invalid-turnstile-token');
+
+        $this->assertSame(422, $response->getStatusCode(), (string) $response->getBody());
+    }
+
+    #[Test]
+    public function forgot_password_is_unchanged_when_protection_is_disabled(): void
+    {
+        $this->setting('flectar-turnstile.forgot', false);
+
+        $response = $this->sendForgotPasswordRequest();
+
+        $this->assertSame(204, $response->getStatusCode(), (string) $response->getBody());
+    }
+
+    #[Test]
+    public function login_rejects_a_non_string_token_without_a_server_error(): void
+    {
+        $response = $this->send(
+            $this->request('POST', '/login', [
+                'json' => [
+                    'identification' => 'normal',
+                    'password' => 'too-obscure',
+                    'turnstileToken' => ['valid-turnstile-token'],
+                ],
+            ])
+        );
+
+        $this->assertSame(422, $response->getStatusCode(), (string) $response->getBody());
+    }
+
+    #[Test]
+    public function direct_api_registration_cannot_bypass_turnstile(): void
+    {
+        $request = $this->request('POST', '/api/users', [
+            'json' => [
+                'data' => [
+                    'type' => 'users',
+                    'attributes' => [
+                        'username' => 'api-created',
+                        'password' => 'too-obscure',
+                        'email' => 'api-created@machine.local',
+                    ],
+                ],
+            ],
+        ]);
+        $response = $this->send($this->requestWithCsrfToken($request));
+
+        $this->assertSame(422, $response->getStatusCode(), (string) $response->getBody());
+        $this->assertStringContainsString('turnstileToken', (string) $response->getBody());
+        $this->assertNull(User::where('username', 'api-created')->first());
+    }
+
+    #[Test]
+    public function maintenance_login_renders_a_challenge_without_exposing_the_secret(): void
+    {
+        $this->setting('maintenance_mode', 'low');
+        $this->setting('flectar-turnstile.site_key', 'public-site-key');
+
+        $response = $this->send($this->request('GET', '/maintenance/login'));
+        $html = (string) $response->getBody();
+
+        $this->assertSame(200, $response->getStatusCode(), $html);
+        $this->assertStringContainsString('data-sitekey="public-site-key"', $html);
+        $this->assertStringContainsString('data-response-field-name="turnstileToken"', $html);
+        $this->assertStringContainsString('https://challenges.cloudflare.com/turnstile/v0/api.js', $html);
+        $this->assertStringNotContainsString('test-secret', $html);
+    }
+
+    #[Test]
+    public function maintenance_login_omits_the_widget_when_protection_is_disabled(): void
+    {
+        $this->setting('maintenance_mode', 'low');
+        $this->setting('flectar-turnstile.signin', false);
+
+        $response = $this->send($this->request('GET', '/maintenance/login'));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertStringNotContainsString('challenges.cloudflare.com', (string) $response->getBody());
+    }
+
+    #[Test]
+    public function html_login_redirects_back_to_the_challenge_when_validation_fails(): void
+    {
+        $this->setting('maintenance_mode', 'low');
+
+        $request = $this->request('POST', '/login')
+            ->withHeader('Accept', 'text/html')
+            ->withParsedBody(['identification' => 'normal', 'password' => 'too-obscure']);
+        $response = $this->send($request);
+
+        $this->assertSame(302, $response->getStatusCode(), (string) $response->getBody());
+        $this->assertStringEndsWith('/maintenance/login', $response->getHeaderLine('Location'));
+
+        $retry = $this->send($this->requestWithCookiesFrom($this->request('GET', '/maintenance/login'), $response));
+
+        $this->assertSame(200, $retry->getStatusCode());
+        $this->assertStringContainsString('<div class="errors">', (string) $retry->getBody());
+        $this->assertStringContainsString('turnstile token field is required', (string) $retry->getBody());
+    }
+
+    #[Test]
+    public function html_login_accepts_a_valid_token_without_verifying_it_twice(): void
+    {
+        $this->setting('maintenance_mode', 'low');
+
+        $request = $this->request('POST', '/login')
+            ->withHeader('Accept', 'text/html')
+            ->withParsedBody([
+                'identification' => 'normal',
+                'password' => 'too-obscure',
+                'turnstileToken' => 'valid-turnstile-token',
+            ]);
+        $response = $this->send($request);
+
+        $this->assertSame(302, $response->getStatusCode(), (string) $response->getBody());
+        $this->assertNotNull(User::findOrFail(2)->accessTokens()->first());
+    }
+
+    #[Test]
     public function signed_in_password_change_rejects_a_missing_turnstile_token(): void
     {
         $response = $this->sendForgotPasswordRequest(authenticatedAs: 2);

@@ -1,0 +1,9 @@
+includes:
+  - vendor/flarum/phpstan/extension.neon
+
+parameters:
+  level: 8
+  paths:
+    - extend.php
+    - src
+  tmpDir: .phpstan-cache

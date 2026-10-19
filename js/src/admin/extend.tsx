@@ -13,7 +13,7 @@ export default [
     }))
     .setting(() => ({
       setting: 'flectar-turnstile.secret_key',
-      type: 'text',
+      type: 'password',
       label: app.translator.trans('flectar-turnstile.admin.settings.secret_key'),
     }))
     .setting(() => ({
