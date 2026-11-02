@@ -10,6 +10,7 @@ export default defineConfig({
     alias: {
       'flarum/forum/app': fileURLToPath(new URL('./tests/fixtures/app.ts', import.meta.url)),
       'flarum/common/extend': fileURLToPath(new URL('../vendor/flarum/core/js/src/common/extend.ts', import.meta.url)),
+      'flarum/common/Component': fileURLToPath(new URL('../vendor/flarum/core/js/src/common/Component.ts', import.meta.url)),
     },
   },
   test: {

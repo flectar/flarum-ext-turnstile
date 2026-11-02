@@ -168,4 +168,151 @@ describe('Turnstile widget lifecycle', () => {
     expect(() => state.remove()).not.toThrow();
     expect(state.widgetId).toBeUndefined();
   });
+
+  it('drops a submission held while the script loads if the script fails', async () => {
+    const submit = vi.fn();
+    const pending = state.render(element);
+    state.submitWhenReady(submit);
+    expect(state.isWaiting()).toBe(true);
+
+    document.querySelector('script')!.dispatchEvent(new Event('error'));
+    await pending;
+
+    expect(state.isWaiting()).toBe(false);
+    expect(errorCallback).toHaveBeenCalledWith({ type: 'error', content: 'flectar-turnstile.forum.not_loaded_error' });
+    expect(submit).not.toHaveBeenCalled();
+  });
+
+  describe('held submissions', () => {
+    let options: RenderOptions;
+    let submit: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+      const api = installApi();
+      await state.render(element);
+      options = api.render.mock.calls[0][1];
+      submit = vi.fn();
+    });
+
+    it('submits straight away when a token is ready', () => {
+      options.callback('token');
+      state.submitWhenReady(submit);
+
+      expect(submit).toHaveBeenCalledOnce();
+      expect(state.isWaiting()).toBe(false);
+    });
+
+    it('holds a submission until the token arrives, then sends it once', () => {
+      state.submitWhenReady(submit);
+      state.submitWhenReady(submit);
+
+      expect(submit).not.toHaveBeenCalled();
+      expect(state.isWaiting()).toBe(true);
+      expect(state.message).toBe('flectar-turnstile.forum.verifying');
+
+      options.callback('token');
+
+      expect(submit).toHaveBeenCalledOnce();
+      expect(callback.mock.invocationCallOrder[0]).toBeLessThan(submit.mock.invocationCallOrder[0]);
+      expect(state.isWaiting()).toBe(false);
+      expect(state.message).toBeNull();
+    });
+
+    it('asks for an interactive challenge and continues once it is solved', () => {
+      state.submitWhenReady(submit);
+      options['before-interactive-callback']();
+
+      expect(state.isWaiting()).toBe(false);
+      expect(errorCallback).toHaveBeenCalledWith({ type: 'error', content: 'flectar-turnstile.forum.validation_error' });
+      expect(state.message).toBe('flectar-turnstile.forum.validation_error');
+
+      // Solving the challenge takes as long as the visitor needs.
+      vi.advanceTimersByTime(60_000);
+      expect(errorCallback).toHaveBeenCalledOnce();
+
+      options['after-interactive-callback']();
+      expect(state.isWaiting()).toBe(true);
+      options.callback('token');
+
+      expect(submit).toHaveBeenCalledOnce();
+    });
+
+    it('asks for an interactive challenge that is already showing', () => {
+      options['before-interactive-callback']();
+      expect(errorCallback).not.toHaveBeenCalled();
+
+      state.submitWhenReady(submit);
+
+      expect(errorCallback).toHaveBeenCalledWith({ type: 'error', content: 'flectar-turnstile.forum.validation_error' });
+      expect(state.isWaiting()).toBe(false);
+
+      options.callback('token');
+      expect(submit).toHaveBeenCalledOnce();
+    });
+
+    it('stops waiting 10 seconds after the first attempt', () => {
+      state.submitWhenReady(submit);
+      vi.advanceTimersByTime(5_000);
+      state.submitWhenReady(submit);
+      vi.advanceTimersByTime(4_999);
+      expect(errorCallback).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1);
+
+      expect(state.isWaiting()).toBe(false);
+      expect(errorCallback).toHaveBeenCalledWith({ type: 'error', content: 'flectar-turnstile.forum.slow_error' });
+
+      options.callback('late-token');
+      expect(submit).not.toHaveBeenCalled();
+    });
+
+    it('drops a held submission when the widget fails, and reports the failure on the next attempt', () => {
+      state.submitWhenReady(submit);
+      options['error-callback']();
+
+      expect(state.isWaiting()).toBe(false);
+      expect(errorCallback).toHaveBeenCalledWith({ type: 'error', content: 'flectar-turnstile.forum.error' });
+
+      errorCallback.mockClear();
+      state.submitWhenReady(submit);
+
+      expect(state.isWaiting()).toBe(false);
+      expect(errorCallback).toHaveBeenCalledWith({ type: 'error', content: 'flectar-turnstile.forum.error' });
+
+      options.callback('recovered-token');
+      expect(submit).not.toHaveBeenCalled();
+    });
+
+    it('drops a held submission when an interactive challenge times out', () => {
+      state.submitWhenReady(submit);
+      options['before-interactive-callback']();
+      options['timeout-callback']();
+      options.callback('token');
+
+      expect(submit).not.toHaveBeenCalled();
+    });
+
+    it('drops a held submission when the modal closes', () => {
+      state.submitWhenReady(submit);
+      state.remove();
+      options.callback('late-token');
+      vi.advanceTimersByTime(10_000);
+
+      expect(submit).not.toHaveBeenCalled();
+      expect(errorCallback).not.toHaveBeenCalled();
+    });
+
+    it('lets the visitor cancel a held submission', () => {
+      expect(state.cancelSubmit()).toBe(false);
+      state.submitWhenReady(submit);
+
+      expect(state.cancelSubmit()).toBe(true);
+      expect(state.message).toBeNull();
+
+      options.callback('token');
+      vi.advanceTimersByTime(10_000);
+      expect(submit).not.toHaveBeenCalled();
+      expect(errorCallback).not.toHaveBeenCalled();
+    });
+  });
 });

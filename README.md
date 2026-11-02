@@ -29,6 +29,8 @@ Enable **Cloudflare Turnstile** in the admin dashboard, then configure it:
 
 Protected forms reject requests when keys are missing or invalid, the challenge has expired, or verification is unavailable. Configure both keys before making the protected forms available to users.
 
+If someone submits a protected form before the challenge finishes, the form waits and then continues automatically. If Cloudflare needs them to complete an interactive check, the form asks them to do that first.
+
 ## Protection scope
 
 - Signup is validated on the server, including direct API user creation. Administrators can create users without a challenge.
