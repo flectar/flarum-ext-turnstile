@@ -10,17 +10,41 @@ vi.mock('../src/forum/components/Turnstile', () => ({ default: class {} }));
 
 const modalNames = ['ForgotPasswordModal', 'LogInModal', 'SignUpModal', 'ChangePasswordModal'];
 
+// Mirrors the structure of core's submit field so the held state can be checked on its button.
+function createFields() {
+  const items = new Map<string, any>([
+    ['submit', { tag: 'div', attrs: { className: 'Form-group' }, children: [{ tag: 'Button', attrs: { type: 'submit', loading: false } }] }],
+  ]);
+
+  return {
+    add: (key: string, content: unknown) => items.set(key, content),
+    has: (key: string) => items.has(key),
+    get: (key: string) => items.get(key),
+  };
+}
+
 function createModalClass() {
   return class {
     turnstile!: TurnstileState;
     loading = false;
     alertAttrs: unknown = null;
+    submissions: SubmitEvent[] = [];
     oninit() {}
+    onsubmit(e: SubmitEvent) {
+      e.preventDefault();
+      this.submissions.push(e);
+    }
+    fields() {
+      return createFields();
+    }
+    onerror(_error: unknown) {}
     loaded() {
       this.loading = false;
     }
   };
 }
+
+const submitEvent = () => new Event('submit', { cancelable: true }) as SubmitEvent;
 
 describe.each(modalNames)('%s Turnstile recovery', (modalName) => {
   let modal: InstanceType<ReturnType<typeof createModalClass>>;
@@ -34,7 +58,7 @@ describe.each(modalNames)('%s Turnstile recovery', (modalName) => {
   beforeEach(async () => {
     const modals = Object.fromEntries(modalNames.map((name) => [name, createModalClass()]));
     redraw = vi.fn();
-    vi.stubGlobal('m', { redraw });
+    vi.stubGlobal('m', Object.assign(vi.fn(), { redraw }));
     // Exercise Flarum's actual method extenders, including lazy module registration.
     vi.stubGlobal('flarum', {
       reg: {
@@ -93,5 +117,63 @@ describe.each(modalNames)('%s Turnstile recovery', (modalName) => {
     options.callback('fresh-token');
 
     expect(modal.alertAttrs).toBe(formError);
+  });
+
+  it('holds an early submission and sends it once Cloudflare provides a token', () => {
+    const submitButton = () => modal.fields().get('submit').children[0].attrs;
+    const event = submitEvent();
+    modal.onsubmit(event);
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(modal.submissions).toHaveLength(0);
+    expect(submitButton()).toEqual({ type: 'submit', loading: true, 'aria-disabled': 'true' });
+
+    api.render.mock.calls[0][1].callback('fresh-token');
+
+    expect(modal.submissions).toEqual([event]);
+    expect(submitButton()).toEqual({ type: 'submit', loading: false });
+    expect(redraw).toHaveBeenCalled();
+  });
+
+  it('submits straight away once Cloudflare has provided a token', () => {
+    api.render.mock.calls[0][1].callback('fresh-token');
+    const event = submitEvent();
+    modal.onsubmit(event);
+
+    expect(modal.submissions).toEqual([event]);
+  });
+
+  it('asks the visitor to complete an interactive challenge, then continues', () => {
+    const options = api.render.mock.calls[0][1];
+    modal.onsubmit(submitEvent());
+    options['before-interactive-callback']();
+
+    expect(modal.alertAttrs).toEqual({ type: 'error', content: 'flectar-turnstile.forum.validation_error' });
+    expect(modal.fields().get('submit').children[0].attrs.loading).toBe(false);
+
+    options.callback('fresh-token');
+
+    expect(modal.submissions).toHaveLength(1);
+    expect(modal.alertAttrs).toBeNull();
+  });
+
+  it('only resets the widget after a failed request that carried a token', () => {
+    modal.onerror({ alert: { type: 'error', content: 'Something went wrong' } });
+    expect(api.reset).not.toHaveBeenCalled();
+
+    api.render.mock.calls[0][1].callback('used-token');
+    modal.onerror({ alert: { type: 'error', content: 'Invalid credentials' } });
+
+    expect(api.reset).toHaveBeenCalledWith('widget-id');
+  });
+
+  it.runIf(modalName === 'ChangePasswordModal')('only resets the widget after a failed reset request that carried a token', () => {
+    modal.loaded();
+    expect(api.reset).not.toHaveBeenCalled();
+
+    api.render.mock.calls[0][1].callback('used-token');
+    modal.loaded();
+
+    expect(api.reset).toHaveBeenCalledWith('widget-id');
   });
 });
